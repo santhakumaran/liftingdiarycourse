@@ -2,6 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## CRITICAL: Documentation-First Approach
+
+**BEFORE generating ANY code, you MUST ALWAYS:**
+
+1. **Check the `/doc` directory** for relevant coding standards and guidelines
+2. **Read and follow** the applicable documentation files
+3. **Adhere strictly** to all standards outlined in the docs
+
+### Available Documentation
+
+- `/doc/ui.md` - UI component and date formatting standards
+  - ONLY shadcn/ui components allowed (NO custom UI components)
+  - Date formatting must use date-fns with `do MMM yyyy` format
+
+**All code generated MUST comply with these documentation standards.**
+
 ## Project Overview
 
 This is a Next.js 16 application named "liftingdiarycourse" built with TypeScript, React 19, and Tailwind CSS v4. The project uses the Next.js App Router architecture with a modern setup.
