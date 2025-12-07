@@ -1,33 +1,18 @@
-'use client'
-
-import { useState } from 'react'
-import { format } from 'date-fns'
-import { Calendar } from '@/components/ui/calendar'
+import { format, parseISO } from 'date-fns'
+import { getWorkoutsByDate } from '@/data/workouts'
+import { DashboardCalendar } from '@/components/dashboard-calendar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function DashboardPage() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+interface DashboardPageProps {
+  searchParams: Promise<{ date?: string }>
+}
 
-  const mockWorkouts = [
-    {
-      id: 1,
-      name: 'Morning Strength Training',
-      exercises: ['Bench Press', 'Squats', 'Deadlifts'],
-      duration: '45 min',
-    },
-    {
-      id: 2,
-      name: 'Evening Cardio',
-      exercises: ['Running', 'Jump Rope'],
-      duration: '30 min',
-    },
-    {
-      id: 3,
-      name: 'Core Workout',
-      exercises: ['Planks', 'Crunches', 'Russian Twists'],
-      duration: '20 min',
-    },
-  ]
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  const params = await searchParams
+  const dateParam = params.date
+  const selectedDate = dateParam ? parseISO(dateParam) : new Date()
+
+  const workouts = await getWorkoutsByDate(selectedDate)
 
   return (
     <div className="container mx-auto p-6 space-y-8">
@@ -39,20 +24,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Select Date</CardTitle>
-            <CardDescription>Choose a date to view workouts</CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              className="rounded-md border"
-            />
-          </CardContent>
-        </Card>
+        <DashboardCalendar />
 
         <div className="lg:col-span-2 space-y-4">
           <div>
@@ -61,24 +33,31 @@ export default function DashboardPage() {
             </h2>
           </div>
 
-          {mockWorkouts.length > 0 ? (
+          {workouts.length > 0 ? (
             <div className="space-y-4">
-              {mockWorkouts.map((workout) => (
+              {workouts.map((workout) => (
                 <Card key={workout.id}>
                   <CardHeader>
-                    <CardTitle>{workout.name}</CardTitle>
-                    <CardDescription>Duration: {workout.duration}</CardDescription>
+                    <CardTitle>{workout.name || 'Untitled Workout'}</CardTitle>
+                    <CardDescription>
+                      Started: {format(workout.startedAt, 'h:mm a')}
+                      {workout.completedAt && ` • Completed: ${format(workout.completedAt, 'h:mm a')}`}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div>
                       <p className="text-sm font-medium mb-2">Exercises:</p>
-                      <ul className="list-disc list-inside space-y-1">
-                        {workout.exercises.map((exercise, index) => (
-                          <li key={index} className="text-sm text-muted-foreground">
-                            {exercise}
-                          </li>
-                        ))}
-                      </ul>
+                      {workout.workoutExercises.length > 0 ? (
+                        <ul className="list-disc list-inside space-y-1">
+                          {workout.workoutExercises.map((we) => (
+                            <li key={we.id} className="text-sm text-muted-foreground">
+                              {we.exercise.name} ({we.sets.length} {we.sets.length === 1 ? 'set' : 'sets'})
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No exercises logged</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
