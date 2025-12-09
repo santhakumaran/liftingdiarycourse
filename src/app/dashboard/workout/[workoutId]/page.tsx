@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { format } from 'date-fns'
-import { createWorkoutAction } from './actions'
+import { updateWorkoutAction } from './actions'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -26,10 +26,18 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-export default function NewWorkoutPage() {
+interface EditWorkoutPageProps {
+  params: Promise<{
+    workoutId: string
+  }>
+}
+
+export default function EditWorkoutPage({ params }: EditWorkoutPageProps) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [workoutId, setWorkoutId] = useState<string | null>(null)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -39,21 +47,56 @@ export default function NewWorkoutPage() {
     },
   })
 
+  useEffect(() => {
+    async function loadWorkout() {
+      try {
+        const resolvedParams = await params
+        setWorkoutId(resolvedParams.workoutId)
+
+        const response = await fetch(`/api/workouts/${resolvedParams.workoutId}`)
+
+        if (!response.ok) {
+          throw new Error('Failed to load workout')
+        }
+
+        const workout = await response.json()
+
+        form.reset({
+          name: workout.name || '',
+          startedAt: format(new Date(workout.startedAt), 'yyyy-MM-dd'),
+        })
+
+        setIsLoading(false)
+      } catch (err) {
+        setError('Failed to load workout')
+        setIsLoading(false)
+      }
+    }
+
+    loadWorkout()
+  }, [params, form])
+
   const onSubmit = async (values: FormValues) => {
+    if (!workoutId) {
+      setError('Workout ID not found')
+      return
+    }
+
     setError(null)
     setIsSubmitting(true)
 
     try {
-      const result = await createWorkoutAction({
+      const result = await updateWorkoutAction({
+        workoutId,
         name: values.name,
         startedAt: new Date(values.startedAt),
       })
 
       if (!result.success) {
-        setError(result.error || 'Failed to create workout')
+        setError(result.error || 'Failed to update workout')
         setIsSubmitting(false)
       } else {
-        router.push(`/dashboard/workout/${result.workoutId}`)
+        router.push('/dashboard')
       }
     } catch (err) {
       setError('An unexpected error occurred')
@@ -61,11 +104,23 @@ export default function NewWorkoutPage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="container mx-auto max-w-2xl py-8">
+        <Card>
+          <CardContent className="py-8">
+            <p className="text-center text-muted-foreground">Loading workout...</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="container mx-auto max-w-2xl py-8">
       <Card>
         <CardHeader>
-          <CardTitle>Create New Workout</CardTitle>
+          <CardTitle>Edit Workout</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -111,13 +166,13 @@ export default function NewWorkoutPage() {
               />
 
               <div className="flex gap-4">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Creating...' : 'Create Workout'}
+                <Button type="submit" disabled={isSubmitting || isLoading}>
+                  {isSubmitting ? 'Updating...' : 'Update Workout'}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => window.history.back()}
+                  onClick={() => router.push('/dashboard')}
                   disabled={isSubmitting}
                 >
                   Cancel

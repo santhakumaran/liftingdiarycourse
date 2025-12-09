@@ -117,3 +117,35 @@ export async function createWorkout(data: {
 
   return workout
 }
+
+/**
+ * Update an existing workout for the currently logged in user
+ */
+export async function updateWorkout(
+  workoutId: string,
+  data: {
+    name?: string
+    startedAt?: Date
+  }
+) {
+  const { userId } = await auth()
+
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+
+  const [workout] = await db
+    .update(workouts)
+    .set({
+      name: data.name,
+      startedAt: data.startedAt,
+    })
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)))
+    .returning()
+
+  if (!workout) {
+    throw new Error('Workout not found or unauthorized')
+  }
+
+  return workout
+}
