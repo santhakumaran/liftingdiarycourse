@@ -1,7 +1,9 @@
 import { format, parseISO } from 'date-fns'
+import Link from 'next/link'
 import { getWorkoutsByDate } from '@/data/workouts'
 import { DashboardCalendar } from '@/components/dashboard-calendar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 interface DashboardPageProps {
   searchParams: Promise<{ date?: string }>
@@ -65,10 +67,13 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
           ) : (
             <Card>
-              <CardContent className="pt-6">
+              <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
                 <p className="text-center text-muted-foreground">
                   No workouts logged for this date
                 </p>
+                <Button asChild>
+                  <Link href="/dashboard/workout/new">Log New Workout</Link>
+                </Button>
               </CardContent>
             </Card>
           )}

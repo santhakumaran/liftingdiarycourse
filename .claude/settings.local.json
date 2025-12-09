@@ -12,7 +12,9 @@
       "Bash(git merge:*)",
       "Bash(npm run lint)",
       "Bash(npm run build:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
