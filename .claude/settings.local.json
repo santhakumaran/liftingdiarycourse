@@ -6,9 +6,17 @@
       "mcp__neon__describe_table_schema",
       "mcp__neon__run_sql_transaction",
       "mcp__neon__run_sql",
+      "Bash(git fetch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
       "Bash(git merge:*)",
-      "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nUpdate Claude settings to allow git commit commands\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)",
+      "Bash(git push:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm install:*)",
+      "Bash(git commit:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

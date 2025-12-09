@@ -97,3 +97,23 @@ export async function getWorkoutById(workoutId: string) {
 
   return workout
 }
+
+/**
+ * Create a new workout for the currently logged in user
+ */
+export async function createWorkout(data: {
+  userId: string
+  name?: string
+  startedAt: Date
+}) {
+  const [workout] = await db
+    .insert(workouts)
+    .values({
+      userId: data.userId,
+      name: data.name,
+      startedAt: data.startedAt,
+    })
+    .returning()
+
+  return workout
+}
